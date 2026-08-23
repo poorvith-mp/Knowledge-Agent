@@ -103,22 +103,22 @@ class GitHubClient:
         items: List[Dict[str, Any]] = []
         base_params = dict(extra_params or {})
         try:
-            with httpx.Client(timeout=10.0) as client:
-                for page in range(1, max_pages + 1):
-                    params = {**base_params, "per_page": per_page, "page": page}
-                    res = client.get(url, headers=GitHubClient._get_headers(token), params=params)
-                    if res.status_code != 200:
-                        break
-                    batch = res.json()
-                    if not batch:
-                        break
-                    items.extend(batch)
-                    if len(batch) < per_page:
-                        break  # last page
+            for page in range(1, max_pages + 1):
+                params = {**base_params, "per_page": per_page, "page": page}
+                res = GitHubClient._get(url, token, params=params)
+                if res is None or res.status_code != 200:
+                    break
+                batch = res.json()
+                if not batch:
+                    break
+                items.extend(batch)
+                if len(batch) < per_page:
+                    break  # last page
         except Exception as e:
             print(f"GitHub API Error ({label}): {e}")
         return items
 
+    @staticmethod
     def _get(
         url: str,
         token: str,

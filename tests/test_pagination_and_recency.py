@@ -14,6 +14,7 @@ from knowledge_engine import GitHubClient, ContextExplainer, IntentCategory
 def _page_response(items, status_code=200):
     resp = MagicMock(spec=httpx.Response)
     resp.status_code = status_code
+    resp.headers = {}
     resp.json.return_value = items
     return resp
 
@@ -88,7 +89,7 @@ class TestPagination(unittest.TestCase):
     @patch.object(httpx.Client, "get")
     def test_pagination_stops_on_non_200(self, mock_get):
         full_page = [_comment(i) for i in range(100)]
-        mock_get.side_effect = [_page_response(full_page), _page_response([], status_code=500)]
+        mock_get.side_effect = [_page_response(full_page), _page_response([], status_code=404)]
 
         result = GitHubClient.fetch_issue_comments("token", "owner", "repo", 1)
 
